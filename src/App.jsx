@@ -226,13 +226,14 @@ export default function App() {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-100 p-4">
         <div className="bg-white p-6 rounded w-full max-w-sm space-y-3 shadow">
-          <h2 className="text-center font-bold">🔐 WhisperBox</h2>
+          <h2 className="text-center font-bold"> WhisperBox</h2>
 
           <input
             className="w-full p-2 border rounded"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            autoComplete="off"
           />
 
           <input
@@ -241,6 +242,7 @@ export default function App() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
           />
 
           <button onClick={register} className="w-full bg-green-500 text-white p-2 rounded">
