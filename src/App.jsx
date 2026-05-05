@@ -21,7 +21,6 @@ import {
 let socket;
 
 export default function App() {
-  // ================= STATE =================
   const [authState, setAuthState] = useState("loading");
 
   const [username, setUsername] = useState("");
@@ -35,7 +34,6 @@ export default function App() {
   const [myPrivateKey, setMyPrivateKey] = useState("");
   const [myPublicKey, setMyPublicKey] = useState("");
 
-  // ================= INIT KEYS =================
   useEffect(() => {
     const init = async () => {
       const existing = localStorage.getItem("keys");
@@ -64,7 +62,6 @@ export default function App() {
     init();
   }, []);
 
-  // ================= AUTH CHECK =================
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -87,7 +84,6 @@ export default function App() {
       });
   }, []);
 
-  // ================= SOCKET =================
   useEffect(() => {
     if (authState !== "loggedIn") return;
 
@@ -100,7 +96,6 @@ export default function App() {
     return () => socket.disconnect();
   }, [authState]);
 
-  // ================= AUTH =================
   const register = async () => {
     const res = await fetch("http://localhost:5000/register", {
       method: "POST",
@@ -146,7 +141,6 @@ export default function App() {
     setUsers([]);
   };
 
-  // ================= RECEIVE =================
   const handleReceive = async (data) => {
     try {
       const privateKey = await importPrivateKey(myPrivateKey);
@@ -180,7 +174,6 @@ export default function App() {
     }
   };
 
-  // ================= SEND =================
   const sendMessage = async () => {
     if (!message || !activeContact) return;
 
@@ -215,7 +208,6 @@ export default function App() {
     setMessage("");
   };
 
-  // ================= LOADING =================
   if (authState === "loading") {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -224,7 +216,6 @@ export default function App() {
     );
   }
 
-  // ================= LOGIN =================
   if (authState === "loggedOut") {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -260,11 +251,9 @@ export default function App() {
     );
   }
 
-  // ================= MAIN UI =================
   return (
     <div className="h-screen flex flex-col bg-gray-100">
 
-      {/* TOP BAR */}
       <div className="p-3 bg-white border-b flex justify-between items-center">
         <div className="flex items-center gap-2 font-bold">
           <Lock size={18} />
@@ -279,10 +268,8 @@ export default function App() {
         </button>
       </div>
 
-      {/* MAIN WRAPPER */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* SIDEBAR */}
         <div
           className={`
           bg-white border-r
@@ -309,7 +296,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* CHAT AREA */}
         <div
           className={`
           flex-1 flex flex-col
@@ -317,7 +303,6 @@ export default function App() {
         `}
         >
 
-          {/* CHAT HEADER */}
           <div className="p-3 bg-white border-b flex items-center gap-2">
             <button
               className="sm:hidden p-1 bg-gray-200 rounded"
@@ -331,7 +316,6 @@ export default function App() {
             </span>
           </div>
 
-          {/* MESSAGES */}
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {(chats[activeContact?.id] || []).map((m, i) => (
               <div
@@ -349,7 +333,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* INPUT */}
           <div className="p-3 bg-white border-t flex gap-2">
             <input
               className="flex-1 border p-2 rounded text-sm"
