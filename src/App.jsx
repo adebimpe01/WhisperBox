@@ -134,6 +134,9 @@ export default function App() {
 
     setUsers(usersData);
     setAuthState("loggedIn");
+
+    setUsername("");
+    setPassword("");
   };
 
   const logout = () => {
