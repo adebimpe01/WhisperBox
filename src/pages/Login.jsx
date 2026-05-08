@@ -1,20 +1,18 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 export default function Login() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [show, setShow] = useState(false);
     const [error, setError] = useState("");
 
-    const navigate = useNavigate();
-
     const handleLogin = async () => {
         setError("");
 
-        if (!username || !password) {
-            return setError("Username and password are required");
+        if (!email || !password) {
+            return setError("Email and password are required");
         }
 
         try {
@@ -25,9 +23,8 @@ export default function Login() {
                     headers: {
                         "Content-Type": "application/json",
                     },
-
                     body: JSON.stringify({
-                        username,
+                        email, // ✅ FIXED (was username)
                         password,
                     }),
                 }
@@ -46,29 +43,22 @@ export default function Login() {
             }
 
             // save token
-            localStorage.setItem(
-                "token",
-                data.access_token
-            );
+            localStorage.setItem("token", data.access_token);
 
             // save user
-            localStorage.setItem(
-                "user",
-                JSON.stringify(data.user)
-            );
+            localStorage.setItem("user", JSON.stringify(data.user));
 
             // save keys
             localStorage.setItem(
                 "keys",
                 JSON.stringify({
                     publicKey: data.user.public_key,
-                    privateKey:
-                        data.user.wrapped_private_key,
+                    privateKey: data.user.wrapped_private_key,
                     salt: data.user.pbkdf2_salt,
                 })
             );
 
-            // navigate
+            // redirect
             window.location.href = "/chat";
 
         } catch (err) {
@@ -107,11 +97,10 @@ export default function Login() {
                 {/* EMAIL */}
                 <input
                     className="w-full p-2 border rounded mb-3"
-                    placeholder="Username"
-                    value={username}
-                    name="login-user-fake"
+                    placeholder="Email"
+                    value={email}
                     autoComplete="off"
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                 />
 
                 {/* PASSWORD */}
@@ -121,7 +110,6 @@ export default function Login() {
                         type={show ? "text" : "password"}
                         placeholder="Password"
                         value={password}
-                        name="login-pass-fake"
                         autoComplete="new-password"
                         onChange={(e) => setPassword(e.target.value)}
                     />
