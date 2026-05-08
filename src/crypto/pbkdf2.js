@@ -1,5 +1,9 @@
-export async function deriveKeyFromPassword(password, salt) {
+// src/crypto/pbkdf2.js
+
+export async function deriveKeyFromPassword(password, saltBase64) {
   const enc = new TextEncoder();
+
+  const salt = Uint8Array.from(atob(saltBase64), c => c.charCodeAt(0));
 
   const baseKey = await crypto.subtle.importKey(
     "raw",

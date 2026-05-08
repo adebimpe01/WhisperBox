@@ -1,77 +1,107 @@
-// src/crypto/aes.js
+// =========================
+// helpers
+// =========================
 
-// convert text → buffer
 function encode(text) {
   return new TextEncoder().encode(text);
 }
 
-// buffer → text
 function decode(buffer) {
   return new TextDecoder().decode(buffer);
 }
 
-// buffer → base64
 function toBase64(buffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  return btoa(binary);
 }
 
-// base64 → buffer
 function fromBase64(base64) {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return bytes.buffer; // ✅ IMPORTANT FIX
 }
+
+// =========================
+// AES KEY
+// =========================
 
 export async function generateAESKey() {
-  return await window.crypto.subtle.generateKey(
-    {
-      name: "AES-GCM",
-      length: 256,
-    },
+  return crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
     true,
     ["encrypt", "decrypt"]
   );
 }
 
-// ENCRYPT MESSAGE
-export async function encryptMessage(key, message) {
-  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+// =========================
+// ENCRYPT
+// =========================
 
-  const encrypted = await window.crypto.subtle.encrypt(
-    {
-      name: "AES-GCM",
-      iv,
-    },
+export async function encryptMessage(key, message) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
     key,
     encode(message)
   );
 
   return {
     iv: toBase64(iv),
-    data: toBase64(encrypted),
+    ciphertext: toBase64(encrypted),
   };
 }
 
-// DECRYPT MESSAGE
-export async function decryptMessage(key, iv, data) {
-  const decrypted = await window.crypto.subtle.decrypt(
+// =========================
+// DECRYPT
+// =========================
+
+export async function decryptMessage(key, iv, ciphertext) {
+  const decrypted = await crypto.subtle.decrypt(
     {
       name: "AES-GCM",
-      iv: fromBase64(iv),
+      iv: new Uint8Array(fromBase64(iv)),
     },
     key,
-    fromBase64(data)
+    fromBase64(ciphertext)
   );
 
   return decode(decrypted);
 }
 
+// =========================
+// EXPORT KEY
+// =========================
+
 export async function exportAESKey(key) {
-  return await window.crypto.subtle.exportKey("raw", key);
+  const raw = await crypto.subtle.exportKey("raw", key);
+  return toBase64(raw);
 }
 
+// =========================
+// IMPORT KEY
+// =========================
+
 export async function importAESKey(rawKey) {
-  return await window.crypto.subtle.importKey(
+  const keyBuffer =
+    typeof rawKey === "string"
+      ? fromBase64(rawKey)
+      : rawKey;
+
+  return crypto.subtle.importKey(
     "raw",
-    rawKey,
+    keyBuffer,
     { name: "AES-GCM" },
     true,
     ["encrypt", "decrypt"]

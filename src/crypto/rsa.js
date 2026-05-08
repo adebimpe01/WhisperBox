@@ -1,15 +1,31 @@
-// src/crypto/rsa.js
-
 function toBase64(buffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  return btoa(binary);
 }
 
 function fromBase64(base64) {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return bytes.buffer; // ✅ IMPORTANT FIX
 }
 
+// =========================
+// RSA KEY PAIR
+// =========================
+
 export async function generateRSAKeys() {
-  const keyPair = await window.crypto.subtle.generateKey(
+  const keyPair = await crypto.subtle.generateKey(
     {
       name: "RSA-OAEP",
       modulusLength: 2048,
@@ -20,8 +36,15 @@ export async function generateRSAKeys() {
     ["encrypt", "decrypt"]
   );
 
-  const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-  const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+  const publicKey = await crypto.subtle.exportKey(
+    "spki",
+    keyPair.publicKey
+  );
+
+  const privateKey = await crypto.subtle.exportKey(
+    "pkcs8",
+    keyPair.privateKey
+  );
 
   return {
     publicKey: toBase64(publicKey),
@@ -29,8 +52,12 @@ export async function generateRSAKeys() {
   };
 }
 
+// =========================
+// IMPORT KEYS
+// =========================
+
 export async function importPublicKey(base64Key) {
-  return await window.crypto.subtle.importKey(
+  return crypto.subtle.importKey(
     "spki",
     fromBase64(base64Key),
     { name: "RSA-OAEP", hash: "SHA-256" },
@@ -40,7 +67,7 @@ export async function importPublicKey(base64Key) {
 }
 
 export async function importPrivateKey(base64Key) {
-  return await window.crypto.subtle.importKey(
+  return crypto.subtle.importKey(
     "pkcs8",
     fromBase64(base64Key),
     { name: "RSA-OAEP", hash: "SHA-256" },
@@ -49,16 +76,26 @@ export async function importPrivateKey(base64Key) {
   );
 }
 
+// =========================
+// RSA ENCRYPT / DECRYPT AES KEY
+// =========================
+
 export async function encryptAESKey(publicKey, aesKeyBuffer) {
-  return await window.crypto.subtle.encrypt(
+
+  const buffer =
+    typeof aesKeyBuffer === "string"
+      ? new TextEncoder().encode(aesKeyBuffer)
+      : aesKeyBuffer;
+
+  return crypto.subtle.encrypt(
     { name: "RSA-OAEP" },
     publicKey,
-    aesKeyBuffer
+    buffer
   );
 }
 
 export async function decryptAESKey(privateKey, encryptedKey) {
-  return await window.crypto.subtle.decrypt(
+  return crypto.subtle.decrypt(
     { name: "RSA-OAEP" },
     privateKey,
     encryptedKey
