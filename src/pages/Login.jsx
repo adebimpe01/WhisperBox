@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 export default function Login() {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [show, setShow] = useState(false);
     const [error, setError] = useState("");
@@ -11,8 +11,8 @@ export default function Login() {
     const handleLogin = async () => {
         setError("");
 
-        if (!email || !password) {
-            return setError("Email and password are required");
+        if (!username || !password) {
+            return setError("Username and password are required");
         }
 
         try {
@@ -24,7 +24,7 @@ export default function Login() {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        email, // ✅ FIXED (was username)
+                        username,   // ✅ FIXED (consistent with register)
                         password,
                     }),
                 }
@@ -42,13 +42,10 @@ export default function Login() {
                 );
             }
 
-            // save token
+            // save auth
             localStorage.setItem("token", data.access_token);
-
-            // save user
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            // save keys
             localStorage.setItem(
                 "keys",
                 JSON.stringify({
@@ -58,7 +55,6 @@ export default function Login() {
                 })
             );
 
-            // redirect
             window.location.href = "/chat";
 
         } catch (err) {
@@ -94,13 +90,12 @@ export default function Login() {
                     </div>
                 )}
 
-                {/* EMAIL */}
+                {/* USERNAME */}
                 <input
                     className="w-full p-2 border rounded mb-3"
-                    placeholder="Email"
-                    value={email}
-                    autoComplete="off"
-                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                 />
 
                 {/* PASSWORD */}
@@ -110,7 +105,6 @@ export default function Login() {
                         type={show ? "text" : "password"}
                         placeholder="Password"
                         value={password}
-                        autoComplete="new-password"
                         onChange={(e) => setPassword(e.target.value)}
                     />
 
